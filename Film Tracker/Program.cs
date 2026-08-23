@@ -26,18 +26,27 @@ string rawData = await response.Content.ReadAsStringAsync();
 TmdbResponse movieData = JsonSerializer.Deserialize<TmdbResponse>(rawData);
 
 
-// Loop through the list of movies and print just the titles and dates!
+// For loop that prints out the results and numbers them for the user
 Console.WriteLine("--- SEARCH RESULTS ---");
-foreach (Movie movie in movieData.Results)
+
+for (int i = 0; i < movieData.Results.Count; i++)
 {
-    Console.WriteLine($"{movie.Title} ({movie.ReleaseDate})");
+    Movie movie = movieData.Results[i]; // i + i makes the list start at 1, 2, 3 instead of 0, 1, 2 for the user
+    Console.WriteLine($"{i + 1}. {movie.Title} ({movie.ReleaseDate})");
 }
+
+Console.WriteLine("\nEnter the number of the film to check exactly where it is streaming: ");
+string choice = Console.ReadLine();
+
+int selectedNumber = int.Parse(choice); // Convert the text into an integer
+int selectedIndex = selectedNumber - 1; // Subtract 1 because C# starts counting at 0, but the user starts counting at 1
+
 
 
 if (movieData.Results.Count > 0) // Make sure we find a movie before continuing
 {
     // Grab the first movie in the results
-    Movie topMovie = movieData.Results[0];
+    Movie topMovie = movieData.Results[selectedIndex];
     Console.WriteLine($"\nLooking up streaming services for: {topMovie.Title}...");
 
     string providerUrl = $"https://api.themoviedb.org/3/movie/{topMovie.Id}/watch/providers?api_key=c59abf43762dd8a06f11594d0d89b6cf";
