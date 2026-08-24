@@ -1,0 +1,70 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using System.Text.Json
+@* This tells the page to look inside your new Models folder*@
+@using Film_Tracker_Web.Models
+
+<PageTitle>Film Tracker</PageTitle>
+
+<h1> Film Tracker</h1>
+<p>Search for a film or TV show to find out where it's streaming.</p>
+
+@* --- The Search Bar --- *@
+<div style="margin-bottom: 20px;">
+    @* @bind connects what the user types directly into our C# searchQuery variable *@
+    <input @bind="searchQuery" placeholder="e.g. The Dark Knight" style="padding: 5px; width: 300px;" />
+    
+    @* @onclick tells the button to run our PerformSearch C# method! *@
+    <button @onclick="PerformSearch" style="padding: 5px 10px; ">Search</button>
+</div>
+
+@* --- The Results --- *@
+@if (isLoading)
+{
+    <p><em>Searching TMDB...</em></p>    
+}
+else if (searchResults != null)
+{
+    <ul>
+        @foreach (Media media in searchResults)
+        {
+            @if(media.MediaType != "person") // Hides actors from results'
+            {
+                <li><strong>[@media.MediaType.ToUpper()]</strong> @media.DisplayName (@media.DisplayDate)</li>
+            }
+        }
+    </ul>   
+        
+}
+
+        @code {
+            // These replace console variables
+        private string searchQuery = "";
+        private List<Media> searchResults;
+        private bool isLoading = false;
+
+        // This method runs when the Search button is clicked
+        private async Task PerformSearch()
+        {
+            if (string.IsNullOrWhiteSpace(searchQuery)) return;
+            isLoading = true; // Shows the Searching... text
+
+            // This is your exact C# console code!
+            using HttpClient client = new HttpClient();
+            string safeSearchQuery = Uri.EscapeDataString(searchQuery);
+            string url = $"https://api.themoviedb.org/3/search/multi?query={safeSearchQuery}&api_key=c59abf43762dd8a06f11594d0d89b6cf";
+
+            HttpResponseMessage response = await client.GetAsync(url);
+            string rawData = await response.Content.ReadAsStringAsync();
+
+            TmdbResponse movieData = JsonSerializer.Deserialize<TmdbResponse>(rawData);
+
+            // Save the results to our variable so the HTML can draw them
+            if (movieData != null)
+            {
+                searchResults = movieData.Results;
+            }
+
+            isLoading = false; // Hides the Searching... text
+        }
+}
