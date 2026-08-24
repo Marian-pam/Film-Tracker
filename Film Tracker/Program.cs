@@ -11,7 +11,7 @@ string safeSearchQuery = Uri.EscapeDataString(userInput); // If the user adds a 
 
 // API
 // URL for search query
-string url = $"https://api.themoviedb.org/3/search/movie?query={safeSearchQuery}&api_key=c59abf43762dd8a06f11594d0d89b6cf";
+string url = $"https://api.themoviedb.org/3/search/multi?query={safeSearchQuery}&api_key=c59abf43762dd8a06f11594d0d89b6cf";
 HttpResponseMessage response = await client.GetAsync(url); // Wait for the browser to get the response
 string rawData = await response.Content.ReadAsStringAsync(); // Read the text from the response
 
@@ -23,8 +23,8 @@ Console.WriteLine("--- SEARCH RESULTS ---");
 
 for (int i = 0; i < movieData.Results.Count; i++)
 {
-    Movie movie = movieData.Results[i]; // i + i makes the list start at 1, 2, 3 instead of 0, 1, 2 for the user
-    Console.WriteLine($"{i + 1}. {movie.Title} ({movie.ReleaseDate})");
+    Media media = movieData.Results[i]; // i + i makes the list start at 1, 2, 3 instead of 0, 1, 2 for the user
+    Console.WriteLine($"{i + 1}. [{media.MediaType.ToUpper()}] {media.DisplayName} ({media.DisplayDate})");
 }
 
 
@@ -38,7 +38,7 @@ int selectedIndex = selectedNumber - 1; // Subtract 1 because C# starts counting
 
 if (movieData.Results.Count > 0) // Make sure we find a movie before continuing
 {
-    Movie topMovie = movieData.Results[selectedIndex]; // Grab the first movie in the results
+    Media topMovie = movieData.Results[selectedIndex]; // Grab the first movie in the results
     Console.WriteLine($"\nLooking up streaming services for: {topMovie.Title}...");
 
     string providerUrl = $"https://api.themoviedb.org/3/movie/{topMovie.Id}/watch/providers?api_key=c59abf43762dd8a06f11594d0d89b6cf";
@@ -73,20 +73,36 @@ public class TmdbResponse // Reads the data from TMDB
 {
     // TMDB sends a list of movies inside a property called "results"
     [JsonPropertyName("results")]
-    public List<Movie> Results { get; set; }
+    public List<Media> Results { get; set; }
 }
 
 // Convers the data from TMDB into separate C# classes
-public class Movie
+public class Media
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
+    [JsonPropertyName("media_type")]
+    public string MediaType { get; set; }
+
+    // Films use "title" and "release_date"
     [JsonPropertyName("title")]
     public string Title { get; set; }
 
+
     [JsonPropertyName("release_date")]
     public string ReleaseDate { get; set; }
+
+    // TV shows use "name" and "first_air_date"
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+
+    [JsonPropertyName("first_air_date")]
+    public string FirstAirDate { get; set; }
+
+    // Helper to easily ge the display name, whether it's a TV show or Film
+    public string DisplayName => Title ?? Name ?? "Unknown Title";
+    public string DisplayDate => ReleaseDate ?? FirstAirDate ?? "Unknown Date";
     
 }
 
