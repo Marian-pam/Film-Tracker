@@ -42,6 +42,16 @@ namespace Film_Tracker_Web.Models
         public string DisplayName => Title ?? Name ?? "Unknown Title";
         public string DisplayDate => ReleaseDate ?? FirstAirDate ?? "Unknown Date";
 
+
+        [JsonPropertyName("poster_path")] // Grab the partial path from the JSON
+        public string PosterPath { get; set; }
+
+        // A C# helper to build the full, clickable image URL
+        // If TMDB doesn't have a poster (null), we provide a fake grey placeholder
+        public string FullPosterUrl => string.IsNullOrEmpty(PosterPath)
+            ? "https://via.placeholder.com/100x150?text=No+Image"
+            : $"https://image.tmdb.org/t/p/w200{PosterPath}";
+
     }
 
     public class ProviderResponse

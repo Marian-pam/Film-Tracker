@@ -30,7 +30,17 @@ else if (searchResults != null)
         {
             @if(media.MediaType != "person") // Hides actors from results'
             {
-                <li><strong>[@media.MediaType.ToUpper()]</strong> @media.DisplayName (@media.DisplayDate)</li>
+                @* "Style" (CSS) is used to tell the browser how to draw this specific item, "display" tells it to put the image and the text side by side*@
+                <li style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center;">
+                    <img src="@media.FullPosterUrl" alt="Poster for @media.DisplayName" style="width: 100px; border-radius: 8px; box-shadow: 2px 2px 5px gray;" />
+
+                    <div>
+                        <strong>[@media.MediaType.ToUpper()</strong>
+                        <span style="font-size: 1.2rem; font-weight: bold;">@media.DisplayName</span>
+                        <br /> @* <br /> forces a line break, like hitting Enter on your keyboard*@
+                        <span style="color: gray;">Released: @media.DisplayDate</span>
+                    </div>
+                </li>
             }
         }
     </ul>   
