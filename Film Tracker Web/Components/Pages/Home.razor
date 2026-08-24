@@ -25,6 +25,34 @@
 }
 else if (searchResults != null)
 {
+    
+    @if (selectedMedia != null)
+    {
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;">
+        <h3 style="margin-topL 0;">Streaming for: @selectedMedia.DisplayName</h3>
+        
+        @if (currentProviders == null)
+            {
+                <p>Loading...</p>
+            }
+            else if (currentProviders.Count ==0)
+            {
+                <p style"color: red;">Not currently streaming on any subscription service in the UK.</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (ProviderInfo provider in currentProviders)
+                    {
+                        <li> @provider.ProviderName</li>
+                    }
+                </ul>
+            }
+            </div>
+            }
+
+
+
     <ul>
         @foreach (Media media in searchResults)
         {
@@ -39,6 +67,11 @@ else if (searchResults != null)
                         <span style="font-size: 1.2rem; font-weight: bold;">@media.DisplayName</span>
                         <br /> @* <br /> forces a line break, like hitting Enter on your keyboard*@
                         <span style="color: gray;">Released: @media.DisplayDate</span>
+                        
+                        <br />
+                        <button @onclick="() => CheckProviders(media)" style="margin-top: 10px; padding: 5px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Where to watch?
+                        </button>
                     </div>
                 </li>
             }
@@ -47,34 +80,63 @@ else if (searchResults != null)
         
 }
 
-        @code {
-            // These replace console variables
-        private string searchQuery = "";
-        private List<Media> searchResults;
-        private bool isLoading = false;
+@code {
+    // These replace console variables
+    private string searchQuery = "";
+    private List<Media> searchResults;
+    private bool isLoading = false;
 
-        // This method runs when the Search button is clicked
-        private async Task PerformSearch()
+    private Media selectedMedia;
+    private List<ProviderInfo> currentProviders;
+
+    // This method runs when the Search button is clicked
+    private async Task PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery)) return;
+        isLoading = true; // Shows the Searching... text
+
+        // This is your exact C# console code!
+        using HttpClient client = new HttpClient();
+        string safeSearchQuery = Uri.EscapeDataString(searchQuery);
+        string url = $"https://api.themoviedb.org/3/search/multi?query={safeSearchQuery}&api_key=c59abf43762dd8a06f11594d0d89b6cf";
+
+        HttpResponseMessage response = await client.GetAsync(url);
+        string rawData = await response.Content.ReadAsStringAsync();
+
+        TmdbResponse movieData = JsonSerializer.Deserialize<TmdbResponse>(rawData);
+
+        // Save the results to our variable so the HTML can draw them
+        if (movieData != null)
         {
-            if (string.IsNullOrWhiteSpace(searchQuery)) return;
-            isLoading = true; // Shows the Searching... text
-
-            // This is your exact C# console code!
-            using HttpClient client = new HttpClient();
-            string safeSearchQuery = Uri.EscapeDataString(searchQuery);
-            string url = $"https://api.themoviedb.org/3/search/multi?query={safeSearchQuery}&api_key=c59abf43762dd8a06f11594d0d89b6cf";
-
-            HttpResponseMessage response = await client.GetAsync(url);
-            string rawData = await response.Content.ReadAsStringAsync();
-
-            TmdbResponse movieData = JsonSerializer.Deserialize<TmdbResponse>(rawData);
-
-            // Save the results to our variable so the HTML can draw them
-            if (movieData != null)
-            {
-                searchResults = movieData.Results;
-            }
-
-            isLoading = false; // Hides the Searching... text
+            searchResults = movieData.Results;
         }
+
+        isLoading = false; // Hides the Searching... text
+    }
+
+    private async Task CheckProviders(Media media)
+    {
+        selectedMedia = media; // Remembers which one they clicked
+        currentProviders = null; // Clear out any old results
+
+        using HttpClient client = new HttpClient();
+
+        string urlType = media.MediaType == "tv" ? "tv" : "movie";
+        string url = $"https://api.themoviedb.org/3/{urlType}/{media.Id}/watch/providers?api_key=c59abf43762dd8a06f11594d0d89b6cf";
+
+        HttpResponseMessage response = await client.GetAsync(url);
+        string rawData = await response.Content.ReadAsStringAsync();
+        ProviderResponse providerData = JsonSerializer.Deserialize<ProviderResponse>(rawData);
+
+        // Safely check if GB (UK) Flatrate (Subscription) data exists
+        if (providerData?.Results?.GB?.Flatrate != null)
+        {
+            currentProviders = providerData.Results.GB.Flatrate;
+        }
+        else
+        {
+            currentProviders = new List<ProviderInfo>(); // Empty list means no providers found
+        }
+    }
+
 }
