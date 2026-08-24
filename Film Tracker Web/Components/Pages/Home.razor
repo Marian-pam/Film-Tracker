@@ -92,7 +92,12 @@ else if (searchResults != null)
     // This method runs when the Search button is clicked
     private async Task PerformSearch()
     {
+        
+
         if (string.IsNullOrWhiteSpace(searchQuery)) return;
+        selectedMedia = null; // Clear previous provider results
+        currentProviders = null;
+
         isLoading = true; // Shows the Searching... text
 
         // This is your exact C# console code!
