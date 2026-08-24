@@ -2,28 +2,20 @@
 using System.Text.Json.Serialization;
 using System.Text.Json;
 
-// Create browser
-using HttpClient client = new HttpClient();
 
-// Lets the user search for whatever they want
-Console.WriteLine("What film or TV show would you like to search for?");
-string userInput = Console.ReadLine();
-// If the user adds a space while searching for films, TMDB will crash, this is a safety new to ensure it doesn't
-string safeSearchQuery = Uri.EscapeDataString(userInput);
+using HttpClient client = new HttpClient(); // Create browser
+Console.WriteLine("What film or TV show would you like to search for?"); // Lets the user search for whatever they want
+string userInput = Console.ReadLine(); // Reads userinput
+string safeSearchQuery = Uri.EscapeDataString(userInput); // If the user adds a space while searching for films, TMDB will crash, this is a safety new to ensure it doesn't
 
 
 // API
-// Tell the browser where to go
+// URL for search query
 string url = $"https://api.themoviedb.org/3/search/movie?query={safeSearchQuery}&api_key=c59abf43762dd8a06f11594d0d89b6cf";
+HttpResponseMessage response = await client.GetAsync(url); // Wait for the browser to get the response
+string rawData = await response.Content.ReadAsStringAsync(); // Read the text from the response
 
-// Wait for the browser to get the response
-HttpResponseMessage response = await client.GetAsync(url);
-
-// Read the text from the response
-string rawData = await response.Content.ReadAsStringAsync();
-
-// Convert the JSON text into our C# Classes
-TmdbResponse movieData = JsonSerializer.Deserialize<TmdbResponse>(rawData);
+TmdbResponse movieData = JsonSerializer.Deserialize<TmdbResponse>(rawData); // Convert the JSON text into our C# Classes
 
 
 // For loop that prints out the results and numbers them for the user
@@ -35,24 +27,24 @@ for (int i = 0; i < movieData.Results.Count; i++)
     Console.WriteLine($"{i + 1}. {movie.Title} ({movie.ReleaseDate})");
 }
 
+
 Console.WriteLine("\nEnter the number of the film to check exactly where it is streaming: ");
 string choice = Console.ReadLine();
-
 int selectedNumber = int.Parse(choice); // Convert the text into an integer
 int selectedIndex = selectedNumber - 1; // Subtract 1 because C# starts counting at 0, but the user starts counting at 1
 
 
 
+
 if (movieData.Results.Count > 0) // Make sure we find a movie before continuing
 {
-    // Grab the first movie in the results
-    Movie topMovie = movieData.Results[selectedIndex];
+    Movie topMovie = movieData.Results[selectedIndex]; // Grab the first movie in the results
     Console.WriteLine($"\nLooking up streaming services for: {topMovie.Title}...");
 
     string providerUrl = $"https://api.themoviedb.org/3/movie/{topMovie.Id}/watch/providers?api_key=c59abf43762dd8a06f11594d0d89b6cf";
     HttpResponseMessage providerResponse = await client.GetAsync(providerUrl); // Wait for the browser to get the response and save it to a new variable
     string providerRawData = await providerResponse.Content.ReadAsStringAsync(); // Read the internet data as a string
-    Console.WriteLine(providerRawData); // Print the internet data to the screen
+    // (Don't need it) Console.WriteLine(providerRawData); // Print the internet data to the screen
 
     ProviderResponse providerData = JsonSerializer.Deserialize<ProviderResponse>(providerRawData);
 
@@ -76,8 +68,8 @@ if (movieData.Results.Count > 0) // Make sure we find a movie before continuing
 
 
 
-// Reads the data from TMDB
-public class TmdbResponse
+// C# Classes to read the data from TMDB
+public class TmdbResponse // Reads the data from TMDB
 {
     // TMDB sends a list of movies inside a property called "results"
     [JsonPropertyName("results")]
@@ -106,20 +98,18 @@ public class ProviderResponse
 
 public class ProviderCountries
 {
-    // You can change "US" to "GB", "CA", "AU", depending on where you live!
-    [JsonPropertyName("GB")]
+    [JsonPropertyName("GB")] // You can change "US" to "GB", "CA", "AU", depending on where you live!
     public CountryData GB { get; set; }
 }
 
 public class CountryData
 {
-    // "flatrate" is TMDB's word for standard streaming subscriptions (Netflix, Hulu, etc)
-    [JsonPropertyName("flatrate")]
+    [JsonPropertyName("flatrate")] // "flatrate" is TMDB's word for standard streaming subscriptions (Netflix, Hulu, etc)
     public List<ProviderInfo> Flatrate { get; set; }
 }
 
 public class ProviderInfo
 {
-    [JsonPropertyName("provider_name")]
-    public string ProviderName { get; set; }
+    [JsonPropertyName("provider_name")] // Json version of variable name
+    public string ProviderName { get; set; } // Creates a string variable called ProviderName, and reads the Json version and saves it into this variable
 }
