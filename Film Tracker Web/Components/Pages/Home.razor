@@ -12,7 +12,7 @@
 @* --- The Search Bar --- *@
 <div style="margin-bottom: 20px;">
     @* @bind connects what the user types directly into our C# searchQuery variable *@
-    <input @bind="searchQuery" placeholder="e.g. The Dark Knight" style="padding: 5px; width: 300px;" />
+    <input @bind="searchQuery" placeholder="e.g. Avatar" style="padding: 5px; width: 300px;" />
     
     @* @onclick tells the button to run our PerformSearch C# method! *@
     <button @onclick="PerformSearch" style="padding: 5px 10px; ">Search</button>
@@ -72,6 +72,13 @@ else if (searchResults != null)
                         <button @onclick="() => CheckProviders(media)" style="margin-top: 10px; padding: 5px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
                             Where to watch?
                         </button>
+
+
+                        @*Line 76 doesn't have a function yet, but button appears on the screen and is able to be clicked (Progress...)*@
+                        <button @onclick="() => AddWishlist(media)" style="margin-top: 10px; padding: 5px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Add to Wishlist
+                        </button>
+
                     </div>
                 </li>
             }
@@ -81,6 +88,7 @@ else if (searchResults != null)
 }
 
 @code {
+
     // These replace console variables
     private string searchQuery = "";
     private List<Media> searchResults;
@@ -92,7 +100,7 @@ else if (searchResults != null)
     // This method runs when the Search button is clicked
     private async Task PerformSearch()
     {
-        
+
 
         if (string.IsNullOrWhiteSpace(searchQuery)) return;
         selectedMedia = null; // Clear previous provider results
@@ -142,6 +150,11 @@ else if (searchResults != null)
         {
             currentProviders = new List<ProviderInfo>(); // Empty list means no providers found
         }
+    }
+
+    private async Task AddWishlist(Media media)
+    {
+        throw new NotImplementedException();
     }
 
 }
