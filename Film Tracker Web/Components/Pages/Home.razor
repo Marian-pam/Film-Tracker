@@ -15,8 +15,25 @@
     <input @bind="searchQuery" placeholder="e.g. Avatar" style="padding: 5px; width: 300px;" />
     
     @* @onclick tells the button to run our PerformSearch C# method! *@
-    <button @onclick="PerformSearch" style="padding: 5px 10px; ">Search</button>
+    <button title="Click to Search" @onclick="PerformSearch" style="padding: 5px 10px; ">Search</button>
 </div>
+
+<hr />
+@*<h1></h1> (1,2,3,4,5,6) Headings, above Paragraphs*@
+@*<p></p> Paragraph*@
+@*<p title="I'm a tooltip">This is a paragraph.</p>*@
+@*<hr /> Adds horizontal line across the screen *@
+@*<br> Line break, empty space line*@
+@*<pre> (Keeps formatting, whereas <p> doesn't
+  My Bonnie lies over the ocean.
+
+  My Bonnie lies over the sea.
+
+  My Bonnie lies over the ocean.
+
+  Oh, bring back my Bonnie to me.
+</pre> *@
+@*style="background-color:..."; color:...; font-family:...; font-size:...%; text-align:...; *@
 
 
 @* --- The Results --- *@
